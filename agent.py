@@ -17,6 +17,10 @@ class Agent:
         environment.goal = self.goal
 
         self.path, self.visited = self.algorithm(environment)
+        print(f"{self.name} path: {self.path}")
+
+        if not self.path:
+            print(f"{self.name} could not find a valid path.")
 
         environment.start = original_start
         environment.goal = original_goal
