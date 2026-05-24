@@ -1,13 +1,16 @@
 map_name,algorithm,path_length,visited_nodes,execution_time
-Simple Map,BFS,9,16,5.9300000430084765e-05
-Simple Map,DFS,9,11,2.3299999156733975e-05
-Simple Map,A*,9,9,4.0800001443130895e-05
-Maze Map,BFS,11,12,5.919999966863543e-05
-Maze Map,DFS,11,24,6.489999941550195e-05
-Maze Map,A*,11,11,3.3299998904112726e-05
-Obstacle Dense Map,BFS,11,26,7.79999973019585e-05
-Obstacle Dense Map,DFS,11,15,4.41999982285779e-05
-Obstacle Dense Map,A*,11,13,5.5900000006658956e-05
-Random Map,BFS,15,47,0.00010580000162008218
-Random Map,DFS,19,44,0.00012280000009923242
-Random Map,A*,15,40,0.00014000000010128133
+Simple Map,BFS,9,16,0.00013
+Simple Map,DFS,9,11,4e-05
+Simple Map,A*,9,9,6e-05
+Maze Map,BFS,11,12,6e-05
+Maze Map,DFS,11,24,5e-05
+Maze Map,A*,11,11,3e-05
+Obstacle Dense Map,BFS,11,26,9e-05
+Obstacle Dense Map,DFS,11,15,3e-05
+Obstacle Dense Map,A*,11,13,6e-05
+Collision Test Map,BFS,4,9,4e-05
+Collision Test Map,DFS,4,5,1e-05
+Collision Test Map,A*,4,4,2e-05
+Random Map,BFS,15,46,0.00011
+Random Map,DFS,15,35,7e-05
+Random Map,A*,15,31,0.00011

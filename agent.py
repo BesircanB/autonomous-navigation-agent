@@ -1,3 +1,5 @@
+
+
 class Agent:
     def __init__(self, name, start, goal, algorithm):
         self.name = name
@@ -33,3 +35,24 @@ class Agent:
             return self.path[step]
 
         return self.path[-1]
+    def replan_path_with_temporary_obstacles(self, environment, current_position, blocked_positions):
+        original_start = environment.start
+        original_goal = environment.goal
+
+        changed_cells = []
+
+        for row, col in blocked_positions:
+            if environment.grid[row][col] == 0:
+                environment.grid[row][col] = 1
+                changed_cells.append((row, col))
+
+        environment.start = current_position
+        environment.goal = self.goal
+
+        self.path, self.visited = self.algorithm(environment)
+
+        for row, col in changed_cells:
+            environment.grid[row][col] = 0
+
+        environment.start = original_start
+        environment.goal = original_goal

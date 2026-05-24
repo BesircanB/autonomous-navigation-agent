@@ -1,7 +1,9 @@
 import pygame
 
-
 CELL_SIZE = 80
+LEGEND_HEIGHT = 170
+MIN_WINDOW_WIDTH = 760
+
 PURPLE = (180, 100, 255)
 ORANGE = (255, 165, 0)
 WHITE = (255, 255, 255)
@@ -13,7 +15,17 @@ YELLOW = (255, 220, 100)
 GRAY = (180, 180, 180)
 
 
-def draw_grid(screen, environment, path=None, visited=None):
+def get_window_size(environment):
+    grid_width = environment.cols * CELL_SIZE
+    grid_height = environment.rows * CELL_SIZE
+
+    width = max(grid_width, MIN_WINDOW_WIDTH)
+    height = grid_height + LEGEND_HEIGHT
+
+    return width, height
+
+
+def draw_grid(screen, environment, path=None, visited=None, show_start_goal=True):
     if path is None:
         path = []
 
@@ -42,23 +54,26 @@ def draw_grid(screen, environment, path=None, visited=None):
             if position in path:
                 color = YELLOW
 
-            if position == environment.start:
-                color = GREEN
+            if show_start_goal:
+                if position == environment.start:
+                    color = GREEN
+                elif position == environment.goal:
+                    color = RED
 
-            if position == environment.goal:
-                color = RED
+
 
             pygame.draw.rect(screen, color, rect)
             pygame.draw.rect(screen, GRAY, rect, 1)
 
 
 def draw_legend(screen, environment, title):
-    font = pygame.font.SysFont("Arial", 22)
+    font_title = pygame.font.SysFont("Arial", 24)
+    font = pygame.font.SysFont("Arial", 20)
 
-    y = environment.rows * CELL_SIZE + 15
+    y = environment.rows * CELL_SIZE + 20
 
-    title_text = font.render(title, True, BLACK)
-    screen.blit(title_text, (20, y))
+    title_text = font_title.render(title, True, BLACK)
+    screen.blit(title_text, (25, y))
 
     legend_items = [
         ("Start", GREEN),
@@ -68,21 +83,54 @@ def draw_legend(screen, environment, title):
         ("Path", YELLOW),
     ]
 
-    x = 20
-    y += 45
+    x = 25
+    y += 55
 
-    for label, color in legend_items:
+    for index, (label, color) in enumerate(legend_items):
+        if index == 3:
+            x = 25
+            y += 50
+
         pygame.draw.rect(screen, color, (x, y, 25, 25))
         text = font.render(label, True, BLACK)
         screen.blit(text, (x + 35, y))
-        x += 140
+
+        x += 180
+
+
+def handle_quit_events():
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            return False
+
+    return True
+
+
+def draw_agent(screen, agent, position, color):
+    row, col = position
+
+    rect = pygame.Rect(
+        col * CELL_SIZE,
+        row * CELL_SIZE,
+        CELL_SIZE,
+        CELL_SIZE
+    )
+
+    pygame.draw.rect(screen, color, rect)
+
+    font = pygame.font.SysFont("Arial", 18)
+    agent_label = font.render(agent.name[-1], True, BLACK)
+
+    screen.blit(
+        agent_label,
+        (col * CELL_SIZE + 30, row * CELL_SIZE + 25)
+    )
 
 
 def visualize(environment, path, visited, title="Autonomous Navigation"):
     pygame.init()
 
-    width = environment.cols * CELL_SIZE
-    height = environment.rows * CELL_SIZE + 120
+    width, height = get_window_size(environment)
 
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption(title)
@@ -90,9 +138,7 @@ def visualize(environment, path, visited, title="Autonomous Navigation"):
     running = True
 
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+        running = handle_quit_events()
 
         screen.fill(WHITE)
 
@@ -107,8 +153,7 @@ def visualize(environment, path, visited, title="Autonomous Navigation"):
 def animate_search(environment, path, visited, title="Search Animation"):
     pygame.init()
 
-    width = environment.cols * CELL_SIZE
-    height = environment.rows * CELL_SIZE + 120
+    width, height = get_window_size(environment)
 
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption(title)
@@ -123,9 +168,7 @@ def animate_search(environment, path, visited, title="Search Animation"):
     show_path = False
 
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+        running = handle_quit_events()
 
         if index < len(visited_list):
             visible_visited.add(visited_list[index])
@@ -151,62 +194,7 @@ def animate_search(environment, path, visited, title="Search Animation"):
 def animate_multiple_agents(environment, agents, title="Multi-Agent System"):
     pygame.init()
 
-    width = environment.cols * CELL_SIZE
-    height = environment.rows * CELL_SIZE + 120
-
-    screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption(title)
-
-    clock = pygame.time.Clock()
-
-    running = True
-
-    max_steps = max(len(agent.path) for agent in agents)
-
-    step = 0
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        screen.fill(WHITE)
-
-        draw_grid(screen, environment)
-
-        colors = [PURPLE, ORANGE]
-
-        for index, agent in enumerate(agents):
-            if step < len(agent.path):
-                row, col = agent.path[step]
-            else:
-                row, col = agent.path[-1]
-
-            rect = pygame.Rect(
-                col * CELL_SIZE,
-                row * CELL_SIZE,
-                CELL_SIZE,
-                CELL_SIZE
-            )
-
-            pygame.draw.rect(screen, colors[index], rect)
-
-        draw_legend(screen, environment, title)
-
-        pygame.display.flip()
-
-        if step < max_steps - 1:
-            step += 1
-
-        clock.tick(2)
-
-    pygame.quit()
-
-def animate_multiple_agents_with_collision_avoidance(environment, agents, title="Collision Avoidance"):
-    pygame.init()
-
-    width = environment.cols * CELL_SIZE
-    height = environment.rows * CELL_SIZE + 120
+    width, height = get_window_size(environment)
 
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption(title)
@@ -216,50 +204,27 @@ def animate_multiple_agents_with_collision_avoidance(environment, agents, title=
     colors = [PURPLE, ORANGE, GREEN, RED]
 
     max_steps = max(len(agent.path) for agent in agents)
-
-    agent_positions = {agent.name: agent.start for agent in agents}
-
-    running = True
     step = 0
+    running = True
 
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        desired_positions = {}
-
-        for agent in agents:
-            desired_positions[agent.name] = agent.get_position_at_step(step)
-
-        occupied_positions = set()
-        new_positions = {}
-
-        for agent in agents:
-            desired_position = desired_positions[agent.name]
-
-            if desired_position in occupied_positions:
-                new_positions[agent.name] = agent_positions[agent.name]
-            else:
-                new_positions[agent.name] = desired_position
-                occupied_positions.add(desired_position)
-
-        agent_positions = new_positions
+        running = handle_quit_events()
 
         screen.fill(WHITE)
         draw_grid(screen, environment)
 
         for index, agent in enumerate(agents):
-            row, col = agent_positions[agent.name]
+            if step < len(agent.path):
+                position = agent.path[step]
+            else:
+                position = agent.path[-1]
 
-            rect = pygame.Rect(
-                col * CELL_SIZE,
-                row * CELL_SIZE,
-                CELL_SIZE,
-                CELL_SIZE
+            draw_agent(
+                screen,
+                agent,
+                position,
+                colors[index % len(colors)]
             )
-
-            pygame.draw.rect(screen, colors[index % len(colors)], rect)
 
         draw_legend(screen, environment, title)
 
@@ -271,3 +236,64 @@ def animate_multiple_agents_with_collision_avoidance(environment, agents, title=
         clock.tick(2)
 
     pygame.quit()
+
+
+def draw_multi_agent_frame(screen, environment, agents, agent_positions, title, show_paths=False):
+    colors = [PURPLE, ORANGE, GREEN, RED]
+
+    screen.fill(WHITE)
+
+    # Draw base grid without environment start/goal colors
+    draw_grid(screen, environment, show_start_goal=False)
+
+    # Draw paths only when show_paths=True
+    if show_paths:
+        for index, agent in enumerate(agents):
+            path_color = colors[index % len(colors)]
+
+            for row, col in agent.path:
+                path_rect = pygame.Rect(
+                    col * CELL_SIZE,
+                    row * CELL_SIZE,
+                    CELL_SIZE,
+                    CELL_SIZE
+                )
+
+                pygame.draw.rect(screen, path_color, path_rect)
+                pygame.draw.rect(screen, GRAY, path_rect, 1)
+
+    # Draw each agent's goal
+    for index, agent in enumerate(agents):
+        goal_row, goal_col = agent.goal
+        goal_color = colors[index % len(colors)]
+
+        goal_rect = pygame.Rect(
+            goal_col * CELL_SIZE,
+            goal_row * CELL_SIZE,
+            CELL_SIZE,
+            CELL_SIZE
+        )
+
+        pygame.draw.rect(screen, goal_color, goal_rect)
+        pygame.draw.rect(screen, GRAY, goal_rect, 1)
+
+        font = pygame.font.SysFont("Arial", 18)
+        goal_label = font.render(f"G{index + 1}", True, BLACK)
+
+        screen.blit(
+            goal_label,
+            (goal_col * CELL_SIZE + 20, goal_row * CELL_SIZE + 25)
+        )
+
+    # Draw current agent positions on top
+    for index, agent in enumerate(agents):
+        draw_agent(
+            screen,
+            agent,
+            agent_positions[agent.name],
+            colors[index % len(colors)]
+        )
+
+    draw_legend(screen, environment, title)
+
+    pygame.display.flip()

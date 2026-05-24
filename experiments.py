@@ -2,9 +2,11 @@ import time
 
 from environment import GridEnvironment
 from algorithms import bfs, dfs, astar
-from visualizer import animate_search
 from evaluation import plot_comparison
 from maps import maps, generate_random_map
+from visualizer import animate_search
+from collision_controller import run_collision_avoidance_simulation
+from multi_agent_demo import create_agents_from_configs
 
 
 def run_single_algorithm(environment, algorithm_function, algorithm_name, map_name):
@@ -20,7 +22,7 @@ def run_single_algorithm(environment, algorithm_function, algorithm_name, map_na
         "algorithm": algorithm_name,
         "path_length": len(path),
         "visited_nodes": len(visited),
-        "execution_time": execution_time,
+        "execution_time": round(execution_time, 5),
     }
 
     return result, path, visited
@@ -60,7 +62,7 @@ def print_results(map_name, results):
             f"{result['algorithm']:<9} | "
             f"{result['path_length']:<11} | "
             f"{result['visited_nodes']:<13} | "
-            f"{result['execution_time']:.6f} sec"
+            f"{result['execution_time']:.5f} sec"
         )
 
 
@@ -87,7 +89,11 @@ def run_experiment_for_map(map_name, map_data):
             print(f"{algorithm_name} could not find a path in {map_name}.")
 
     print_results(map_name, results)
-    plot_comparison(results, filename_prefix=map_name.replace(" ", "_").lower())
+
+    plot_comparison(
+        results,
+        filename_prefix=map_name.replace(" ", "_").lower()
+    )
 
     return results
 
@@ -103,8 +109,54 @@ def run_map_experiments():
 
 
 def run_random_map_experiment():
-    random_map = generate_random_map(8, 8, obstacle_probability=0.25)
+    random_map = generate_random_map(
+        8,
+        8,
+        obstacle_probability=0.25
+    )
 
-    results = run_experiment_for_map("Random Map", random_map)
+    results = run_experiment_for_map(
+        "Random Map",
+        random_map
+    )
 
     return results
+
+
+def run_collision_avoidance_experiment():
+    collision_map = maps["Collision Test Map"]
+
+    environment = GridEnvironment(
+        collision_map["grid"],
+        collision_map["start"],
+        collision_map["goal"]
+    )
+
+    agent_configs = [
+        {
+            "name": "Agent A",
+            "start": (0, 0),
+            "goal": (0, 3),
+            "algorithm": astar,
+        },
+        {
+            "name": "Agent B",
+            "start": (0, 3),
+            "goal": (0, 0),
+            "algorithm": bfs,
+        },
+    ]
+
+    agents = create_agents_from_configs(
+        environment,
+        agent_configs
+    )
+
+    for agent in agents:
+        print(f"{agent.name} path:", agent.path)
+
+    run_collision_avoidance_simulation(
+        environment,
+        agents,
+        "Collision Avoidance Test"
+    )

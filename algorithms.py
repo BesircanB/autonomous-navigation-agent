@@ -12,6 +12,9 @@ def bfs(environment):
     visited = set()
     visited.add(start)
 
+    visited_order = []
+    visited_order.append(start)
+
     parent = {}
 
     while queue:
@@ -25,30 +28,15 @@ def bfs(environment):
         for neighbor in neighbors:
             if neighbor not in visited:
                 visited.add(neighbor)
+                visited_order.append(neighbor)
+
                 parent[neighbor] = current
                 queue.append(neighbor)
 
     path = reconstruct_path(parent, start, goal)
 
-    return path, visited
+    return path, visited_order
 
-
-def reconstruct_path(parent, start, goal):
-    path = []
-
-    current = goal
-
-    while current != start:
-        if current not in parent:
-            return []
-
-        path.append(current)
-        current = parent[current]
-
-    path.append(start)
-    path.reverse()
-
-    return path
 
 def dfs(environment):
     start = environment.start
@@ -58,6 +46,9 @@ def dfs(environment):
 
     visited = set()
     visited.add(start)
+
+    visited_order = []
+    visited_order.append(start)
 
     parent = {}
 
@@ -72,13 +63,14 @@ def dfs(environment):
         for neighbor in neighbors:
             if neighbor not in visited:
                 visited.add(neighbor)
+                visited_order.append(neighbor)
+
                 parent[neighbor] = current
                 stack.append(neighbor)
 
     path = reconstruct_path(parent, start, goal)
 
-    return path, visited
-
+    return path, visited_order
 
 
 def heuristic(a, b):
@@ -96,6 +88,7 @@ def astar(environment):
     heapq.heappush(open_list, (0, start))
 
     visited = set()
+    visited_order = []
 
     parent = {}
 
@@ -109,6 +102,7 @@ def astar(environment):
             continue
 
         visited.add(current)
+        visited_order.append(current)
 
         if current == goal:
             break
@@ -129,4 +123,24 @@ def astar(environment):
 
     path = reconstruct_path(parent, start, goal)
 
-    return path, visited
+    return path, visited_order
+
+
+def reconstruct_path(parent, start, goal):
+    path = []
+
+    current = goal
+
+    while current != start:
+        if current not in parent:
+            return []
+
+        path.append(current)
+        current = parent[current]
+
+    path.append(start)
+    path.reverse()
+
+    return path
+
+
